@@ -41,7 +41,7 @@ git add .
 # Hacer el primer commit
 git commit -m "Initial commit - SoftVision website"
 
-# Conectar con GitHub (reemplaza TU-USUARIO por tu usuario de GitHub)
+# Conectar con GitHub (reemplaza TU-USUARIO por tu usuario de GitHub) - usuario: Fede-dev25
 git remote add origin https://github.com/TU-USUARIO/softvision-page.git
 
 # Cambiar a rama main
@@ -55,7 +55,7 @@ git push -u origin main
 
 ---
 
-## 🌐 Paso 2: Crear Cuenta en Render
+## 🌐 Paso 2: Crear Cuenta en Render  || CREADA CON CUENTA DE GITHUB
 
 1. Ve a: **https://render.com**
 2. Haz clic en **"Get Started"**

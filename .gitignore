@@ -10,6 +10,11 @@ Thumbs.db
 *.swp
 *.swo
 
+# Archivos de desarrollo con comentarios (privados)
+*.dev.js
+*.dev.css
+*.swo
+
 # VS Code
 .vscode/
 *.code-workspace
