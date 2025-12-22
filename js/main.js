@@ -208,12 +208,6 @@ function initContactForm() {
         return;
     }
     
-    
-    
-    
-    
-    
-    
     const EMAILJS_PUBLIC_KEY = 'Erk76FDZj76eHT0ps';  
     const EMAILJS_SERVICE_ID = 'service_softvision';  
     const EMAILJS_TEMPLATE_ID = 'template_etk5vsi'; 
