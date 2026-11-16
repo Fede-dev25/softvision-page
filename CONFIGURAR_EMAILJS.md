@@ -10,7 +10,7 @@ EmailJS permite enviar emails desde el formulario sin necesitar un backend. Es *
 1. Ve a: **https://www.emailjs.com/**
 2. Haz clic en **"Sign Up"** (Registrarse)
 3. Usa tu email: **softvision.business@hotmail.com**
-4. Contraseña: **Softvision2025!++**
+4. Contraseña: ver archivo local `.env` (no se sube al repositorio)
 5. Confirma tu email
 
 ---
