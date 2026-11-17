@@ -69,3 +69,6 @@ $RECYCLE.BIN/
 # Carpetas de desarrollo
 .sass-cache/
 .parcel-cache/
+
+# Capturas originales (pueden tener datos de clientes; no se publican)
+capturas/

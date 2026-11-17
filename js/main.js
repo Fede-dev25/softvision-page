@@ -5,9 +5,143 @@ document.addEventListener('DOMContentLoaded', function() {
     initSmoothScroll();
     initBackToTop();
     initContactForm();
-    initScrollAnimations();
+    initReveal();
     initActiveNavLinks();
+    initProjectFilters();
+    initScrollProgress();
+    initSpotlight();
+    initWhatsAppButton();
+    initYear();
+    initViewTabs();
 });
+
+function initViewTabs() {
+    document.querySelectorAll('.pj-tabs').forEach(tablist => {
+        const tabs = Array.from(tablist.querySelectorAll('[role="tab"]'));
+        const urlLabel = tablist.closest('.pj-bar').querySelector('[data-view-url]');
+
+        function select(tab) {
+            tabs.forEach(t => {
+                const active = t === tab;
+                t.setAttribute('aria-selected', active ? 'true' : 'false');
+                t.tabIndex = active ? 0 : -1;
+                document.getElementById(t.getAttribute('aria-controls')).hidden = !active;
+            });
+            if (urlLabel) urlLabel.textContent = tab.dataset.url;
+        }
+
+        tabs.forEach((tab, i) => {
+            tab.addEventListener('click', () => select(tab));
+            tab.addEventListener('keydown', e => {
+                if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
+                const next = tabs[(i + (e.key === 'ArrowRight' ? 1 : tabs.length - 1)) % tabs.length];
+                select(next);
+                next.focus();
+            });
+        });
+    });
+}
+
+const WHATSAPP_NUMBER = '5493525406916';
+const WHATSAPP_MESSAGE = 'Hola SoftVision! Quiero hacer una consulta sobre un proyecto.';
+
+function initReveal() {
+    if (!('IntersectionObserver' in window)) return;
+
+    const targets = [];
+
+    document.querySelectorAll('[data-reveal]').forEach(el => targets.push(el));
+    document.querySelectorAll('[data-reveal-group]').forEach(group => {
+        Array.from(group.children).forEach((child, i) => {
+            child.style.setProperty('--reveal-delay', `${Math.min(i, 6) * 0.08}s`);
+            targets.push(child);
+        });
+    });
+
+    if (targets.length === 0) return;
+
+    targets.forEach(el => el.classList.add('reveal'));
+    document.documentElement.classList.add('reveal-ready');
+
+    const observer = new IntersectionObserver(entries => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('is-visible');
+                observer.unobserve(entry.target);
+            }
+        });
+    }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+
+    targets.forEach(el => observer.observe(el));
+}
+
+function initScrollProgress() {
+    const bar = document.createElement('div');
+    bar.className = 'scroll-progress';
+    bar.setAttribute('aria-hidden', 'true');
+    document.body.appendChild(bar);
+
+    let ticking = false;
+    function update() {
+        const max = document.documentElement.scrollHeight - window.innerHeight;
+        const progress = max > 0 ? Math.min(window.scrollY / max, 1) : 0;
+        bar.style.transform = `scaleX(${progress})`;
+        ticking = false;
+    }
+
+    window.addEventListener('scroll', () => {
+        if (!ticking) {
+            window.requestAnimationFrame(update);
+            ticking = true;
+        }
+    }, { passive: true });
+    window.addEventListener('resize', update);
+    update();
+}
+
+function initSpotlight() {
+    if (!window.matchMedia('(hover: hover) and (pointer: fine)').matches) return;
+
+    document.querySelectorAll('.service-card, .value-card, .pj-card, .pj-sys, .other-card').forEach(card => {
+        card.classList.add('spotlight');
+        card.addEventListener('pointermove', e => {
+            const r = card.getBoundingClientRect();
+            card.style.setProperty('--mx', `${e.clientX - r.left}px`);
+            card.style.setProperty('--my', `${e.clientY - r.top}px`);
+        });
+    });
+}
+
+function initWhatsAppButton() {
+    if (document.querySelector('.whatsapp-float')) return;
+
+    const link = document.createElement('a');
+    link.className = 'whatsapp-float';
+    link.href = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(WHATSAPP_MESSAGE)}`;
+    link.target = '_blank';
+    link.rel = 'noopener noreferrer';
+    link.setAttribute('aria-label', 'Escribinos por WhatsApp');
+    link.innerHTML = '<i class="bi bi-whatsapp"></i><span>¿Hablamos?</span>';
+    document.body.appendChild(link);
+}
+
+function initProjectFilters() {
+    const chips = document.querySelectorAll('.pj-chip');
+    const items = document.querySelectorAll('.pj-card, .pj-private');
+
+    if (chips.length === 0) return;
+
+    chips.forEach(chip => {
+        chip.addEventListener('click', () => {
+            const filter = chip.dataset.filter;
+
+            chips.forEach(c => c.setAttribute('aria-pressed', c === chip ? 'true' : 'false'));
+            items.forEach(item => {
+                item.hidden = !(filter === 'all' || item.dataset.cat === filter);
+            });
+        });
+    });
+}
 
 function initNavbar() {
     const navbar = document.getElementById('mainNavbar');
@@ -20,7 +154,7 @@ function initNavbar() {
     
     
     function handleNavbarScroll() {
-        if (window.scrollY > scrollThreshold) {
+        if (window.scrollY > scrollThreshold || navbar.hasAttribute('data-solid')) {
             navbar.classList.add('navbar-scrolled');
         } else {
             navbar.classList.remove('navbar-scrolled');
@@ -121,48 +255,6 @@ function initBackToTop() {
         btnBackToTop.setAttribute('aria-label', 'Volver arriba');
         btnBackToTop.setAttribute('title', 'Volver arriba');
         document.body.appendChild(btnBackToTop);
-        
-        
-        const style = document.createElement('style');
-        style.textContent = `
-            .btn-back-to-top {
-                position: fixed;
-                bottom: 30px;
-                right: 30px;
-                width: 50px;
-                height: 50px;
-                background: linear-gradient(135deg, #0052CC, #0065FF);
-                color: white;
-                border: none;
-                border-radius: 50%;
-                cursor: pointer;
-                display: none;
-                align-items: center;
-                justify-content: center;
-                font-size: 1.5rem;
-                box-shadow: 0 4px 12px rgba(0, 82, 204, 0.3);
-                transition: all 0.3s ease;
-                z-index: 1000;
-            }
-            .btn-back-to-top:hover {
-                transform: translateY(-5px);
-                box-shadow: 0 6px 20px rgba(0, 82, 204, 0.4);
-            }
-            .btn-back-to-top.show {
-                display: flex;
-                animation: fadeInUp 0.3s ease;
-            }
-            @media (max-width: 768px) {
-                .btn-back-to-top {
-                    bottom: 20px;
-                    right: 20px;
-                    width: 45px;
-                    height: 45px;
-                    font-size: 1.25rem;
-                }
-            }
-        `;
-        document.head.appendChild(style);
     }
     
     const scrollThreshold = 300; 
@@ -203,10 +295,7 @@ function initBackToTop() {
 function initContactForm() {
     const contactForm = document.getElementById('contactForm');
     
-    if (!contactForm) {
-        console.warn('Formulario de contacto no encontrado');
-        return;
-    }
+    if (!contactForm) return;
     
     const EMAILJS_PUBLIC_KEY = 'Erk76FDZj76eHT0ps';  
     const EMAILJS_SERVICE_ID = 'service_softvision';  
@@ -319,7 +408,6 @@ function initContactForm() {
         
         emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, templateParams)
             .then(function(response) {
-                console.log('✅ Email enviado exitosamente', response.status, response.text);
                 showSuccessMessage(false); 
                 
                 
@@ -390,39 +478,6 @@ function initContactForm() {
     }
 }
 
-function initScrollAnimations() {
-    
-    if (!('IntersectionObserver' in window)) {
-        console.warn('IntersectionObserver no está disponible en este navegador');
-        return;
-    }
-    
-    const observerOptions = {
-        threshold: 0.1,
-        rootMargin: '0px 0px -100px 0px'
-    };
-    
-    const observer = new IntersectionObserver(function(entries) {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                entry.target.classList.add('animate-in');
-                observer.unobserve(entry.target);
-            }
-        });
-    }, observerOptions);
-    
-    
-    const animatedElements = document.querySelectorAll('.animate-on-scroll');
-    animatedElements.forEach(el => observer.observe(el));
-    
-    
-    const cards = document.querySelectorAll('.service-card, .case-card, .value-card');
-    cards.forEach((card, index) => {
-        card.style.animationDelay = `${index * 0.1}s`;
-        observer.observe(card);
-    });
-}
-
 function initActiveNavLinks() {
     const sections = document.querySelectorAll('section[id]');
     const navLinks = document.querySelectorAll('.nav-link[href^="#"]');
@@ -466,88 +521,7 @@ function initActiveNavLinks() {
     highlightActiveSection();
 }
 
-function showToast(title, message, type = 'info') {
-    
-    let toastContainer = document.querySelector('.toast-container');
-    if (!toastContainer) {
-        toastContainer = document.createElement('div');
-        toastContainer.className = 'toast-container position-fixed bottom-0 end-0 p-3';
-        toastContainer.style.zIndex = '9999';
-        document.body.appendChild(toastContainer);
-    }
-    
-    
-    const toastId = 'toast-' + Date.now();
-    const toastHTML = `
-        <div id="${toastId}" class="toast align-items-center text-white bg-${type === 'error' ? 'danger' : 'success'} border-0" role="alert" aria-live="assertive" aria-atomic="true">
-            <div class="d-flex">
-                <div class="toast-body">
-                    <strong>${title}</strong><br>
-                    ${message}
-                </div>
-                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
-            </div>
-        </div>
-    `;
-    
-    toastContainer.insertAdjacentHTML('beforeend', toastHTML);
-    
-    const toastElement = document.getElementById(toastId);
-    const toast = new bootstrap.Toast(toastElement, { delay: 4000 });
-    toast.show();
-    
-    
-    toastElement.addEventListener('hidden.bs.toast', function() {
-        toastElement.remove();
-    });
+function initYear() {
+    const year = String(new Date().getFullYear());
+    document.querySelectorAll('[data-year]').forEach(el => { el.textContent = year; });
 }
-
-const SoftVisionUtils = {
-    
-    scrollToTop: function() {
-        window.scrollTo({
-            top: 0,
-            behavior: 'smooth'
-        });
-    },
-    
-    
-    getOffset: function(element) {
-        const rect = element.getBoundingClientRect();
-        return {
-            top: rect.top + window.scrollY,
-            left: rect.left + window.scrollX
-        };
-    },
-    
-    
-    debounce: function(func, wait) {
-        let timeout;
-        return function executedFunction(...args) {
-            const later = () => {
-                clearTimeout(timeout);
-                func(...args);
-            };
-            clearTimeout(timeout);
-            timeout = setTimeout(later, wait);
-        };
-    },
-    
-    
-    throttle: function(func, limit) {
-        let inThrottle;
-        return function(...args) {
-            if (!inThrottle) {
-                func.apply(this, args);
-                inThrottle = true;
-                setTimeout(() => inThrottle = false, limit);
-            }
-        };
-    }
-};
-
-window.SoftVisionUtils = SoftVisionUtils;
-
-console.log('%c🚀 SoftVision Consultora', 'color: #0052CC; font-size: 20px; font-weight: bold;');
-console.log('%cLanding page inicializada correctamente', 'color: #28A745; font-size: 14px;');
-
